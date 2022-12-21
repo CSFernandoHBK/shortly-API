@@ -12,14 +12,21 @@ export async function signin(req, res){
         const user = await connectionDB.query(`
         SELECT * FROM users WHERE email = '${email}'
         `);
-        /*if(userExists){
-            return res.sendStatus(409);
-        }
-        await connectionDB.query(`
+        if(user.rows.length === 0){
+            return res.sendStatus(404);
+        };
         
+        const isPasswordOk = bcrypt.compareSync(password, user.rows[0].password);
+
+        if(!isPasswordOk){
+            return res.sendStatus(401);
+        }
+
+        await connectionDB.query(`
+            INSERT INTO sessions (token, "userId") VALUES ('${token}', '${user.rows[0].id}')
         `);
-        return res.sendStatus(201);*/
-        return res.send(user.rows);
+
+        return res.send("logado");
     } catch(err){
         console.log(err);
         res.status(500).send(err.message);
@@ -43,7 +50,7 @@ export async function signup(req, res){
         const userExists = await connectionDB.query(`
         SELECT * FROM users WHERE email = '${email}'
         `);
-        if(userExists){
+        if(userExists.rows.length !== 0){
             return res.sendStatus(409);
         }
         await connectionDB.query(`
