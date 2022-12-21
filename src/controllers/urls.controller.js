@@ -41,4 +41,58 @@ export async function linkGenerator(req, res){
         console.log(err);
         res.status(500).send(err.message);
     }
-} 
+}
+
+export async function getUrl(req, res){
+    const { id } = req.params;
+
+    if(!id){
+        return res.sendStatus(400);
+    }
+
+    try{
+        const urlData = await connectionDB.query(`
+            SELECT * from links WHERE id = ${id}
+        `)
+
+        if(!urlData.rows[0]){
+            return res.sendStatus(404);
+        }
+
+        const { completeLink, compactLink} = urlData.rows[0];
+
+        return res.send({
+            "id": `${urlData.rows[0].id}`,
+            "shortUrl": `${compactLink}`,
+            "url": `${completeLink}`
+        });
+    } catch(err){
+        console.log(err);
+        res.status(500).send(err.message);
+    }
+}
+
+export async function deleteUrl(req, res){
+
+
+
+    try{
+
+    } catch(err){
+        console.log(err);
+        res.status(500).send(err.message);
+    }
+}
+
+export async function redirectToUrl(req, res){
+
+
+
+    try{
+
+    } catch(err){
+        console.log(err);
+        res.status(500).send(err.message);
+    }
+}
+

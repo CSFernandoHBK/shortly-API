@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { linkGenerator } from "../controllers/urls.controller.js";
+import { deleteUrl, getUrl, linkGenerator, redirectToUrl } from "../controllers/urls.controller.js";
 
 const router = Router();
 
 router.post("/urls/shorten", linkGenerator)
-router.get("/urls/:id")
-router.get("/urls/open/:shortUrl")
-router.delete("/urls/:id")
+router.get("/urls/:id", getUrl)
+router.get("/urls/open/:shortUrl", redirectToUrl)
+router.delete("/urls/:id", deleteUrl)
 
 export default router;
