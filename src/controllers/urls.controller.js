@@ -72,24 +72,70 @@ export async function getUrl(req, res){
     }
 }
 
-export async function deleteUrl(req, res){
+export async function redirectToUrl(req, res){
+    const {shortUrl} = req.params;
 
-
+    if(!shortUrl){
+        return res.sendStatus(400);
+    }
 
     try{
+        const urlData = await connectionDB.query(`
+            SELECT * FROM links WHERE "compactLink" = '${shortUrl}'
+        `)
 
+        if(!urlData.rows[0]){
+            return res.sendStatus(404);
+        }
+
+        return res.redirect(`${urlData.rows[0].completeLink}`);
     } catch(err){
         console.log(err);
         res.status(500).send(err.message);
     }
 }
 
-export async function redirectToUrl(req, res){
+export async function deleteUrl(req, res){
+    const {authorization} = req.headers;
+    const { id } = req.params;
 
+    if(!id){
+        return res.sendStatus(400);
+    }
 
+    if(!authorization){
+        return res.sendStatus(401);
+    }
 
     try{
+        const token = authorization?.replace("Bearer ", "")
+        if(!token || token === "Bearer"){
+            return res.sendStatus(401);
+        }
 
+        const session = await connectionDB.query(`
+            SELECT * FROM sessions WHERE token = '${token}'
+        `);
+        if(!session.rows[0]){
+            return res.sendStatus(401);
+        };
+
+        const urlInfo = await connectionDB.query(`
+            SELECT * FROM links WHERE id = '${id}'
+        `)
+        if(urlInfo.rows.length === 0){
+            return res.sendStatus(404);
+        }
+
+        if(urlInfo.rows[0].userId !== session.rows[0].userId){
+            return res.sendStatus(401)
+        }
+
+        await connectionDB.query(`
+            DELETE FROM links WHERE id = '${id}'
+        `)
+
+        return res.sendStatus(204);
     } catch(err){
         console.log(err);
         res.status(500).send(err.message);
