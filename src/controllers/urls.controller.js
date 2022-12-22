@@ -87,8 +87,14 @@ export async function redirectToUrl(req, res){
         if(!urlData.rows[0]){
             return res.sendStatus(404);
         }
+        const {completeLink, clicks} = urlData.rows[0];
 
-        return res.redirect(`${urlData.rows[0].completeLink}`);
+        await connectionDB.query(`
+            UPDATE links SET clicks=${clicks + 1} WHERE "compactLink" = '${shortUrl}'
+        `)
+
+        return res.redirect(`${completeLink}`);
+        /*return res.send(urlData.rows[0])*/
     } catch(err){
         console.log(err);
         res.status(500).send(err.message);
