@@ -26,7 +26,7 @@ export async function signin(req, res){
             INSERT INTO sessions (token, "userId") VALUES ('${token}', '${user.rows[0].id}')
         `);
 
-        return res.send("logado");
+        return res.status(200).send(token);
     } catch(err){
         console.log(err);
         res.status(500).send(err.message);
