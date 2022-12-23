@@ -10,8 +10,8 @@ export async function signin(req, res){
 
     try{
         const user = await connectionDB.query(`
-        SELECT * FROM users WHERE email = '${email}'
-        `);
+        SELECT * FROM users WHERE email = $1
+        `, [email]);
         if(user.rows.length === 0){
             return res.sendStatus(404);
         };
@@ -23,8 +23,8 @@ export async function signin(req, res){
         }
 
         await connectionDB.query(`
-            INSERT INTO sessions (token, "userId") VALUES ('${token}', '${user.rows[0].id}')
-        `);
+            INSERT INTO sessions (token, "userId") VALUES ($1, $2)
+        `, [token, user.rows[0].id]);
 
         return res.status(200).send(token);
     } catch(err){
@@ -48,14 +48,14 @@ export async function signup(req, res){
 
     try{
         const userExists = await connectionDB.query(`
-        SELECT * FROM users WHERE email = '${email}'
-        `);
+        SELECT * FROM users WHERE email = $1
+        `, [email]);
         if(userExists.rows.length !== 0){
             return res.sendStatus(409);
         }
         await connectionDB.query(`
-        INSERT INTO users (name, email, password) VALUES ('${name}', '${email}', '${passwordHash}');
-        `);
+        INSERT INTO users (name, email, password) VALUES ($1, $2, $3);
+        `, [name, email, passwordHash]);
         return res.sendStatus(201);
     } catch(err){
         console.log(err);

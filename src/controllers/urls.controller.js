@@ -20,8 +20,8 @@ export async function linkGenerator(req, res){
         }
 
         const session = await connectionDB.query(`
-        SELECT * FROM sessions WHERE token = '${token}'
-        `);
+        SELECT * FROM sessions WHERE token = $1
+        `, [token]);
 
         if(!session.rows[0]){
             return res.sendStatus(401);
@@ -33,8 +33,8 @@ export async function linkGenerator(req, res){
 
         await connectionDB.query(`
             INSERT INTO links ("userId", "completeLink", "compactLink", "clicks")
-            VALUES ('${userId}', '${completeUrl}', '${compactUrl}', '0')
-        `)
+            VALUES ($1, $2, $3, '0')
+        `, [userId, completeUrl, compactUrl])
 
         return res.send({"shortUrl": `${compactUrl}`});
     } catch(err){
@@ -52,8 +52,8 @@ export async function getUrl(req, res){
 
     try{
         const urlData = await connectionDB.query(`
-            SELECT * from links WHERE id = ${id}
-        `)
+            SELECT * from links WHERE id = $1
+        `, [id])
 
         if(!urlData.rows[0]){
             return res.sendStatus(404);
@@ -81,8 +81,8 @@ export async function redirectToUrl(req, res){
 
     try{
         const urlData = await connectionDB.query(`
-            SELECT * FROM links WHERE "compactLink" = '${shortUrl}'
-        `)
+            SELECT * FROM links WHERE "compactLink" = $1
+        `, [shortUrl])
 
         if(!urlData.rows[0]){
             return res.sendStatus(404);
@@ -90,8 +90,8 @@ export async function redirectToUrl(req, res){
         const {completeLink, clicks} = urlData.rows[0];
 
         await connectionDB.query(`
-            UPDATE links SET clicks=${clicks + 1} WHERE "compactLink" = '${shortUrl}'
-        `)
+            UPDATE links SET clicks=${clicks + 1} WHERE "compactLink" = $1
+        `, [shortUrl])
 
         return res.redirect(`${completeLink}`);
     } catch(err){
@@ -119,15 +119,15 @@ export async function deleteUrl(req, res){
         }
 
         const session = await connectionDB.query(`
-            SELECT * FROM sessions WHERE token = '${token}'
-        `);
+            SELECT * FROM sessions WHERE token = $1
+        `, [token]);
         if(!session.rows[0]){
             return res.sendStatus(401);
         };
 
         const urlInfo = await connectionDB.query(`
-            SELECT * FROM links WHERE id = '${id}'
-        `)
+            SELECT * FROM links WHERE id = $1
+        `, [id])
         if(urlInfo.rows.length === 0){
             return res.sendStatus(404);
         }
@@ -137,8 +137,8 @@ export async function deleteUrl(req, res){
         }
 
         await connectionDB.query(`
-            DELETE FROM links WHERE id = '${id}'
-        `)
+            DELETE FROM links WHERE id = $1
+        `, [id])
 
         return res.sendStatus(204);
     } catch(err){

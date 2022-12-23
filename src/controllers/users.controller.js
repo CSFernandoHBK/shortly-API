@@ -13,8 +13,8 @@ export async function getInfoUser(req, res){
         }
 
         const session = await connectionDB.query(`
-            SELECT * FROM sessions WHERE token = '${token}'
-        `);
+            SELECT * FROM sessions WHERE token = $1
+        `, [token]);
 
         if(!session.rows[0]){
             return res.sendStatus(401);
@@ -23,14 +23,14 @@ export async function getInfoUser(req, res){
         const userId = session.rows[0].userId;
 
         const name = await connectionDB.query(`
-            SELECT name FROM users WHERE id = '${userId}'
-        `);
+            SELECT name FROM users WHERE id = $1
+        `, [userId]);
 
         const userName = name.rows[0].name;
 
         const urls = await connectionDB.query(`
-            SELECT * FROM links WHERE "userId"='${userId}';
-        `)
+            SELECT * FROM links WHERE "userId" = $1
+        `, [userId]);
 
         const userUrls = urls.rows.map((u) => ({
             "id": `${u.id}`,
